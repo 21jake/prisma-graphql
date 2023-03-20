@@ -24,10 +24,16 @@
     "migrate:generate": "typeorm-ts-node-commonjs migration:generate -d ./src/configs/typeorm.config.ts"
   },
   "dependencies": {
+    "@apollo/server": "^4.5.0",
+    "@nestjs/apollo": "^11.0.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/graphql": "^11.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@prisma/client": "^4.11.0",
+    "class-validator": "^0.14.0",
+    "graphql": "^16.6.0",
+    "graphql-tools": "^8.3.19",
     "lodash": "^4.17.21",
     "pg": "^8.9.0",
     "reflect-metadata": "^0.1.13",
