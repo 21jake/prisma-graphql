@@ -1,5 +1,16 @@
 import 'reflect-metadata';
-import { Resolver, Query, Mutation, Args, Context, ResolveField, Root, InputType, Field } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Context,
+  ResolveField,
+  Root,
+  InputType,
+  Field,
+  Parent,
+} from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 // import { Post } from './post'
 // import { User } from './user'
@@ -9,6 +20,7 @@ import { User } from 'src/models/user.model';
 import { PrismaService } from 'src/services/prisma.service';
 import { Post } from '@prisma/client';
 import { IsEmail } from 'class-validator';
+import { Comment } from 'src/models/comment.model';
 
 // @InputType()
 // class UserUniqueInput {
@@ -35,40 +47,53 @@ import { IsEmail } from 'class-validator';
 class UserCreateInput {
   @Field()
   @IsEmail()
-  email: string
+  email: string;
 
   @Field()
-  address: string
+  address: string;
 
   @Field()
-  name: string
-
-    
+  name: string;
 }
 
 @Resolver(User)
 export class UserResolver {
   constructor(@Inject(PrismaService) private prismaService: PrismaService) {}
 
-  @ResolveField()
-  async posts(@Root() user: User, @Context() ctx): Promise<Post[]> {
-    return this.prismaService.user
-      .findUnique({
-        where: {
-          id: user.id,
-        },
-      })
-      .posts();
+  @ResolveField('posts')
+  async posts(@Parent() user: User, @Context() ctx): Promise<Post[]> {
+    return this.prismaService.post.findMany({ where: { uploaderId: user.id } });
   }
 
-  @Query(() => [User], { nullable: true })
-  async allUsers(@Context() ctx) {
+  @ResolveField('comments')
+  async comments(@Parent() user: User, @Context() ctx): Promise<Comment[]> {
+    return this.prismaService.comment.findMany({ where: { commenterId: user.id } });
+  }
+
+  @ResolveField('bestPost')
+  async bestPost(@Parent() user: User, @Context() ctx): Promise<Post> {
+    return this.prismaService.post.findFirst({
+      where: { uploaderId: user.id },
+      orderBy: { viewCount: 'desc' },
+      take: 1,
+    });
+  }
+
+  @Query(() => [User], { nullable: true, name: 'users' })
+  async getMany(@Context() ctx) {
     return await this.prismaService.user.findMany();
+  }
+
+  @Query(() => User, { nullable: true, name: 'user' })
+  async user(@Args('id') id: string, @Context() ctx) {
+    return await this.prismaService.user.findUnique({
+      where: { id },
+    });
   }
 
   @Mutation(() => User)
   async createUser(@Args('input') input: UserCreateInput, @Context() ctx): Promise<User> {
-    const {id} = await this.prismaService.user.create({
+    const { id } = await this.prismaService.user.create({
       data: {
         email: input.email,
         name: input.name,
@@ -77,8 +102,8 @@ export class UserResolver {
     });
 
     return this.prismaService.user.findUnique({
-        where: {id},
-    })
+      where: { id },
+    });
   }
 
   //   @Mutation((returns) => User)
@@ -124,5 +149,3 @@ export class UserResolver {
   //       })
   //   }
 }
-
-

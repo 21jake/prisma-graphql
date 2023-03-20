@@ -2,6 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Comment {
+  commenter: User!
+  content: String!
+  createdAt: Timestamp
+  id: ID!
+  likeCount: Int!
+  post: Post!
+}
+
 type Mutation {
   createUser(input: UserCreateInput!): User!
 }
@@ -10,12 +19,14 @@ type Post {
   content: String!
   id: ID!
   title: String!
+  type: String!
   uploader: User!
   viewCount: Int!
 }
 
 type Query {
-  allUsers: [User!]
+  user(id: String!): User
+  users: [User!]
 }
 
 """
@@ -25,11 +36,14 @@ scalar Timestamp
 
 type User {
   address: String!
+  bestPost: Post
+  comments: [Comment!]
   createdAt: Timestamp
   email: String!
   id: ID!
   isActive: Boolean
   name: String!
+  newestComment: Comment
   posts: [Post!]
 }
 
